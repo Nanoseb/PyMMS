@@ -119,11 +119,11 @@ class MMS:
         export_list = []
 
         if include_field:
-            export_list.append(("U_MS", self.U))
-            export_list.append(("V_MS", self.V))
-            export_list.append(("W_MS", self.W))
-            export_list.append(("P_MS", self.P))
-            export_list.append(("Nu_t_MS", self.Nu_t))
+            export_list.append(("U_MS", self.U.doit()))
+            export_list.append(("V_MS", self.V.doit()))
+            export_list.append(("W_MS", self.W.doit()))
+            export_list.append(("P_MS", self.P.doit()))
+            export_list.append(("Nu_t_MS", self.Nu_t.doit()))
 
         if include_grad:
             export_list_grad = []
@@ -148,8 +148,8 @@ class MMS:
         module_string = fcode(Module('RANS_MMS', ['implicit none'], [f_code]), source_format='free', standard=2003)
 
         if postprocess:
-            module_string = re.sub("\n\ *&", "", string)
-            module_string = re.sub(" function ", " elemental function ", string)
+            module_string = re.sub("\n\ *&", "", module_string)
+            module_string = re.sub(" function ", " elemental function ", module_string)
 
         with open(filename, "w") as module_file:
             module_file.write(module_string)
