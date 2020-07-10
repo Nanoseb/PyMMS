@@ -160,7 +160,8 @@ class MMS:
 
 
         print("Function exported to {}:".format(filename))
-        print(element[0]) for element in export_list
+        for element in export_list:
+            print(element[0]) 
 
 
 
