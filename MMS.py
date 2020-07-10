@@ -139,10 +139,10 @@ class MMS:
             export_list = export_list + export_list_grad
 
         if include_source:
-            export_list.append(("source_MOM_U", self.get_source_momx()))
-            export_list.append(("source_MOM_V", self.get_source_momy()))
-            export_list.append(("source_MOM_W", self.get_source_momz()))
-            export_list.append(("source_SA_Nu_t", self.get_source_SA()))
+            export_list.append(("source_MOM_U", self.get_source_momx().doit()))
+            export_list.append(("source_MOM_V", self.get_source_momy().doit()))
+            export_list.append(("source_MOM_W", self.get_source_momz().doit()))
+            export_list.append(("source_SA_Nu_t", self.get_source_SA().doit()))
 
 
             
