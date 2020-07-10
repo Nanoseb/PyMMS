@@ -11,8 +11,12 @@ x, y, z, t = symbols('x y z t')
 
 class MMS:
     def __init__(self, Nu=1, rho=1, 
-                 U=0, V=0, W=0, P=0, Nu_t=0,
-                 wall_dist=0):
+                 U=Integer(0),
+                 V=Integer(0),
+                 W=Integer(0),
+                 P=Integer(0),
+                 Nu_t=Integer(0),
+                 wall_dist=1):
 
         self.Nu = Nu
         self.rho = rho
@@ -135,10 +139,10 @@ class MMS:
             export_list = export_list + export_list_grad
 
         if include_source:
-            export_list.append(("source_MOM_U", self.get_source_momx().doit()))
-            export_list.append(("source_MOM_V", self.get_source_momy().doit()))
-            export_list.append(("source_MOM_W", self.get_source_momz().doit()))
-            export_list.append(("source_SA_Nu_t", self.get_source_SA().doit()))
+            export_list.append(("source_MOM_U", self.get_source_momx()))
+            export_list.append(("source_MOM_V", self.get_source_momy()))
+            export_list.append(("source_MOM_W", self.get_source_momz()))
+            export_list.append(("source_SA_Nu_t", self.get_source_SA()))
 
 
             
@@ -154,6 +158,9 @@ class MMS:
         with open(filename, "w") as module_file:
             module_file.write(module_string)
 
+
+        print("Function exported to {}:".format(filename))
+        print(element[0]) for element in export_list
 
 
 
