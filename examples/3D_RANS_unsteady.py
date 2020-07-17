@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
+#
+# This file is a transcription of an unsteady version of the cases presented in:
+# Eça, L., Hoekstra, M., & Vaz, G. (2012). Manufactured solutions for steady-flow Reynolds-averaged Navier-Stokes solvers.
+#  International Journal of Computational Fluid Dynamics, 26(5), 313–332. https://doi.org/10.1080/10618562.2012.717617
+#
+
+
 from sympy import *
-# import PyMMS
 from PyMMS import PyMMS
 
 i = symbols('i', integer = True)
@@ -57,7 +63,6 @@ global_vars.append((T, 50))
 global_vars.append((rho, 1))
 
 
-
 # Common variable for the test case
 Nu = 1/Re # L=1 and V=1
 
@@ -103,11 +108,9 @@ Usms = Bxus*Byus
 
 Ums = Sum(Alf[i]*Upms, (i, 0, 2)) + Usms*sin(pi*z)**2*Ftime
 
-
 ###############################
 # Wms
 Wms = Derivative(Usms, x)*sin(2*pi*z)**2/(4*pi)*Ftime
-
 
 ###############################
 # Vms = - Integral(Derivative(Ums, x)+ Derivative(Wms, z), (y, 0, y))
@@ -115,8 +118,6 @@ Byvs = As[0]*(y+1/As[1])/As[1]/exp(As[1]*y)
 Vsms = (Byvs-As[0]/As[1]**2)*Derivative(Bxus, x)
 Vpms = Bl[i]*x**(Bl[i]-1)/A1*log(Upms+1) + Bl[i]*y*(Upms-1)/x
 Vms = Sum(Alf[i]*Vpms, (i, 0, 2)) + Vsms*(sin(2*pi*z)*cos(2*pi*z)+sin(pi*z)**2)*Ftime
-
-
 
 ###############################
 # Cp

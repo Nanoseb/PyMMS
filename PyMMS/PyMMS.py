@@ -14,15 +14,53 @@ x, y, z, t = symbols('x y z t')
 
 
 class PyMMS:
+    """
+    Definition and operation on a Manufactured solution. Defines the Momentum equation too.
+    """
     def __init__(self, Nu=1, rho=1, 
                  U=Integer(0),
                  V=Integer(0),
                  W=Integer(0),
                  P=Integer(0),
                  Nu_t_tild=Integer(0),
-                 wall_dist=1,
+                 wall_dist=Integer(1),
                  turbulence_model="SA",
                  verbose=True):
+        """
+
+        Parameters
+        ----------
+        Nu : float or Sympy expression
+            kinematic viscosity
+
+        rho : float or Sympy expression
+            fluid density
+
+        U : Sympy expression
+            x componemt of the velocity
+            
+        V : Sympy expression
+            y componemt of the velocity
+
+        W : Sympy expression
+            z componemt of the velocity
+
+        P : Sympy expression
+            Pressure field
+
+        Nu_t_tild : Sympy expression
+            Nu_t_tild expression for use with "SA" or "MENTER_1eq" turbulence models
+
+        wall_dist : Sympy expression
+            Distance to the wall used by "SA" turbulence model
+
+        turbulence_model : string
+            Turbulence model to choose, only "SA" and "MENTER_1eq" are implemented
+
+        verbose : Bool
+            True if progress status should be outputed
+
+        """
 
         self.Nu = Nu
         self.rho = rho
@@ -66,6 +104,9 @@ class PyMMS:
 
 
     def compute_sources(self):
+        """
+        Computes source terms for the momentum equation and turbulence model selected. This should be run before export_module()
+        """
 
         if self.verbose: print("Computing sources for Momentum equations")
         self.momentum_sources = [self.get_source_momx(),
@@ -108,14 +149,38 @@ class PyMMS:
                       include_field=True,
                       include_grad=True,
                       include_source=True,
-                      postprocess=True,
                       suffix="_MS"):
+        """
+        Exports a compilable Fortran module with the field and source terms definition.
+
+        Parameters
+        ----------
+        filename : string
+            Name of Fortran module file to be written
+
+        global_vars : list of tuples (Sympy symbol, default value)
+            Global variables to be exported to the Module file together with their default value. Only REAL*8 and INTEGERS are supported.
+
+        include_field : Bool
+            Export field quantities
+
+        include_grad : Bool
+            Export gradient of field quantities (need include_field=True)
+
+        include_source : Bool
+            Export equations source terms
+
+        suffix : string
+            name to be appended to variable name in the module function name, used mainly to definition overloading
+
+        """
+
 
         if self.verbose: print("Start export")
         export_list = []
 
         if include_field:
-            if self.verbose: print(" computing field")
+            if self.verbose: print(" getting field")
             export_list.append(("U" + suffix, self.U))
             export_list.append(("V" + suffix, self.V))
             export_list.append(("W" + suffix, self.W))
@@ -126,7 +191,7 @@ class PyMMS:
 
         if include_grad:
             export_list_grad = []
-            if self.verbose: print(" computing grad")
+            if self.verbose: print(" computing gradients")
             for element in export_list:
                 name, expression = element
                 export_list_grad.append( ("d"+name+"dx", diff(expression, x)))
@@ -157,6 +222,7 @@ class PyMMS:
                 global_vars_init += "REAL*8, parameter :: {}\n".format(fcode(Assignment(var, value), source_format='free'))
 
 
+        # Code generation
         [(f_name, f_code), header] = codegen(export_list, "F95", 
                                              header=False, 
                                              empty=True, 
@@ -166,9 +232,11 @@ class PyMMS:
         module_string = fcode(Module('RANS_MMS', ['implicit none', global_vars_init], [f_code]), source_format='free', standard=2003)
 
 
-        if postprocess:
-            module_string = re.sub("\n\ *&", "", module_string)
-            module_string = re.sub(" function ", " elemental function ", module_string)
+        # Fix bug with empty lines in export
+        module_string = re.sub("\n\ *&", "", module_string)
+
+        # Converts function to elemental functions
+        module_string = re.sub(" function ", " elemental function ", module_string)
 
 
         if self.verbose: print(" writing to file")
@@ -186,6 +254,10 @@ class PyMMS:
 # Turbulence models definition
 
 class Model_SA:
+    """
+    One equation turbulence model from Spalart-Allmaras
+    Spalart, P., & Allmaras, S. (1992, January 6). A one-equation turbulence model for aerodynamic flows. 30th Aerospace Sciences Meeting and Exhibit. https://doi.org/10.2514/6.1992-439
+    """
     def __init__(self, mms):
         self.Nu = mms.Nu
         self.rho = mms.rho
@@ -202,7 +274,7 @@ class Model_SA:
 
     def compute_sources(self):
         """
-            Initialise Spalart-Allmaras model 
+        Computes source terms of the model
         """
 
         c_b1 = 0.1355
@@ -233,7 +305,6 @@ class Model_SA:
         g = (r + c_w2*(r**6 - r))
 
         f_w = g*((1+c_w3**6)/(g**6+c_w3**6))**(1/6)
-        # f_w = 1
 
         self.source_SA = self.MatDiff(self.Nu_t_tild) -\
                          (c_b1*(1-f_t2)*S_t*self.Nu_t_tild - \
@@ -246,13 +317,22 @@ class Model_SA:
         self.Nu_t = self.Nu_t_tild*f_v1
 
     def get_sources(self):
+        """
+        Returns a list of source terms and an associated name for the export. 
+        """
         return [("SA", self.source_SA)]
 
     def get_variables(self):
+        """
+        Returns a list of variables used in the model and an associated name.
+        """
         return [("Nu_t_tild", self.Nu_t_tild), 
                 ("Nu_t", self.Nu_t)]
 
     def get_sources_momentum(self):
+        """
+        Returns source terms associated with the turbulence model from the Momentum equation source terms
+        """
         return [- (diff(2*self.rho*self.Nu_t*self.Sij[k,0], x) +
                    diff(2*self.rho*self.Nu_t*self.Sij[k,1], y) +
                    diff(2*self.rho*self.Nu_t*self.Sij[k,2], z)
@@ -261,6 +341,10 @@ class Model_SA:
 
 
 class Model_Menter_1eq:
+    """
+    Menter one equation turbulence model derived from k-ε
+    Menter, F. R. (1997). Eddy Viscosity Transport Equations and Their Relation to the k-ε Model. Journal of Fluids Engineering, 119(4), 876–884. https://doi.org/10.1115/1.2819511
+    """
     def __init__(self, mms):
         self.Nu = mms.Nu
         self.rho = mms.rho
@@ -275,6 +359,9 @@ class Model_Menter_1eq:
         self.name = "Menter 1eq"
 
     def compute_sources(self):
+        """
+        Computes source terms of the model
+        """
         kappa    = 0.41
         sigma    = 1.0
         A_plus   = 13.0
@@ -305,13 +392,22 @@ class Model_Menter_1eq:
 
 
     def get_sources(self):
+        """
+        Returns a list of source terms and an associated name for the export. 
+        """
         return [("MENTER_1eq", self.source_MENTER_1eq)]
 
     def get_variables(self):
+        """
+        Returns a list of variables used in the model and an associated name.
+        """
         return [("Nu_t_tild", self.Nu_t_tild), 
                 ("Nu_t", self.Nu_t)]
 
     def get_sources_momentum(self):
+        """
+        returns source terms associated with the turbulence model from the Momentum equation source terms
+        """
         return [- (diff(2*self.rho*self.Nu_t*self.Sij[k,0], x) +
                    diff(2*self.rho*self.Nu_t*self.Sij[k,1], y) +
                    diff(2*self.rho*self.Nu_t*self.Sij[k,2], z)
