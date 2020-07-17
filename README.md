@@ -1,5 +1,5 @@
 # PyMMS
-This python module generates Manufactured Solutions for RANS equations.
+This python module generates Manufactured Solutions for RANS equations using Sympy.
 
 
 The following turbulence models have been implemented:
