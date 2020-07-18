@@ -40,10 +40,10 @@ W = - Integral(diff(U, x)+ diff(V, y), (z, 0, z))
 
 P = Integer(1)
 
+
 ########################################
 # MMS generation and export
 ########################################
-
 
 # Initialisation of PyMMS with field quantities
 mms = PyMMS(Nu=Nu,
