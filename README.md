@@ -1,5 +1,5 @@
 # PyMMS
-This python module generates Manufactured Solutions for RANS equations using Sympy.
+This python module generates Manufactured Solutions for RANS equations using Sympy. It also directly generates a compilable Fortran module file containing the analytical source terms to be used in a CFD code.
 
 The following turbulence models have been implemented:
 - Spalart-Allmaras (1992)
