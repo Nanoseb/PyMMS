@@ -114,6 +114,8 @@ class PyMMS:
                                  self.get_source_momy(),
                                  self.get_source_momz()]
 
+        self.continuity_sources = self.get_source_continuity()
+
         for extra_model in self.extra_models:
             if self.verbose: print("Compute sources for {}". format(extra_model.name))
             extra_model.compute_sources()
@@ -143,6 +145,11 @@ class PyMMS:
                                                                     diff(2*self.rho*self.Nu*self.Sij[2,2], z)
                                                 )
 
+    def get_source_continuity(self):
+        return diff(self.rho, t) + (diff(self.rho*self.U, x) +
+                                    diff(self.rho*self.V, y) +
+                                    diff(self.rho*self.W, z)
+                                    )
 
     def export_module(self, 
                       filename="module.F90",
@@ -206,6 +213,7 @@ class PyMMS:
             export_list.append(("source_MOM_U", self.momentum_sources[0]))
             export_list.append(("source_MOM_V", self.momentum_sources[1]))
             export_list.append(("source_MOM_W", self.momentum_sources[2]))
+            export_list.append(("source_CONTINUITY", self.continuity_sources))
 
             for extra_model in self.extra_models:
                 for name, term in extra_model.get_sources():
