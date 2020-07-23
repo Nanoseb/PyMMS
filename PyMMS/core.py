@@ -18,7 +18,7 @@ class PyMMS:
     """
     Definition and operation on a Manufactured solution. Defines the Momentum equation too.
     """
-    def __init__(self, Nu=1, rho=1, 
+    def __init__(self, Nu=1, rho=1,
                  U=Integer(0),
                  V=Integer(0),
                  W=Integer(0),
@@ -39,7 +39,7 @@ class PyMMS:
 
         U : Sympy expression
             x componemt of the velocity
-            
+
         V : Sympy expression
             y componemt of the velocity
 
@@ -92,7 +92,7 @@ class PyMMS:
 
 
 
-    def init_operators(self):     
+    def init_operators(self):
         #  Mean strain rate Tensor
         self.Sij = Matrix([[2*diff(self.U,x)                , diff(self.U,y) + diff(self.V,x), diff(self.U,z) + diff(self.W,x)],
                            [diff(self.U,y) + diff(self.V,x) , 2*diff(self.V,y)               , diff(self.W,y) + diff(self.V,z)],
@@ -100,7 +100,7 @@ class PyMMS:
 
 
         # Material Derivative of phi
-        self.MatDiff = lambda phi : diff(phi, t) + self.U*diff(phi, x) + self.V*diff(phi, y) + self.W*diff(phi, z)
+        self.MatDiff = lambda phi: diff(phi, t) + self.U*diff(phi, x) + self.V*diff(phi, y) + self.W*diff(phi, z)
 
 
 
@@ -144,7 +144,7 @@ class PyMMS:
                                                 )
 
 
-    def export_module(self, 
+    def export_module(self,
                       filename="module.F90",
                       global_vars=[],
                       include_field=True,
@@ -213,7 +213,7 @@ class PyMMS:
 
 
         if self.verbose: print(" generating code")
-        
+
         # export global variables
         global_vars_init = ""
         for var, value in global_vars:
@@ -224,10 +224,10 @@ class PyMMS:
 
 
         # Code generation
-        [(f_name, f_code), header] = codegen(export_list, "F95", 
-                                             header=False, 
-                                             empty=True, 
-                                             argument_sequence=(x, y, z, t), 
+        [(f_name, f_code), header] = codegen(export_list, "F95",
+                                             header=False,
+                                             empty=True,
+                                             argument_sequence=(x, y, z, t),
                                              global_vars= [ var[0] for var in global_vars ])
 
         module_string = fcode(Module('RANS_MMS', ['implicit none', global_vars_init], [f_code]), source_format='free', standard=2003)
@@ -247,7 +247,7 @@ class PyMMS:
 
         print("\nFunctions exported to {}:".format(filename))
         for element in export_list:
-            print(element[0]) 
+            print(element[0])
 
 
 

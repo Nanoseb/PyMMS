@@ -12,8 +12,8 @@
 
 from sympy import *
 
-i = symbols('i', integer = True)
-j = symbols('j', integer = True)
+i = symbols('i', integer=True)
+j = symbols('j', integer=True)
 x, y, z, t = symbols('x y z t')
 
 
@@ -61,8 +61,8 @@ class Model_SA:
         f_v1 = xi**3/(xi**3 + c_v1**3)
         f_v2 = 1 - xi/(1+xi*f_v1)
 
-        Omega = sqrt(2*(0.5*(diff(self.U, y) - diff(self.V, x))**2) + 
-                     2*(0.5*(diff(self.U, z) - diff(self.W, x))**2) + 
+        Omega = sqrt(2*(0.5*(diff(self.U, y) - diff(self.V, x))**2) +
+                     2*(0.5*(diff(self.U, z) - diff(self.W, x))**2) +
                      2*(0.5*(diff(self.V, z) - diff(self.W, y))**2))
 
         S_t = Omega + self.Nu_t_tild*f_v2/(kappa**2*self.wall_dist**2)
@@ -85,7 +85,7 @@ class Model_SA:
 
     def get_sources(self):
         """
-        Returns a list of source terms and an associated name for the export. 
+        Returns a list of source terms and an associated name for the export.
         """
         return [("SA", self.source_SA)]
 
@@ -94,7 +94,7 @@ class Model_SA:
         """
         Returns a list of variables used in the model and an associated name.
         """
-        return [("Nu_t_tild", self.Nu_t_tild), 
+        return [("Nu_t_tild", self.Nu_t_tild),
                 ("Nu_t", self.Nu_t)]
 
 
@@ -139,7 +139,7 @@ class Model_Menter_1eq:
         c_2      = c_1/kappa**2 + 1.0/sigma
         c_3      = 7.0
 
-        S = (sqrt(2*Sum(Sum(self.Sij[i,j]**2, (i,0,2)), (j,0,2))))
+        S = (sqrt(2*Sum(Sum(self.Sij[i,j]**2, (i,0,2)), (j,0,2)))).simplify()
 
         E_ke = self.Nu_t_tild**2*(diff(S, x)**2 + diff(S, y)**2 + diff(S, z)**2)/S**2
 
@@ -155,15 +155,15 @@ class Model_Menter_1eq:
         D_1 = (self.Nu_t + self.Nu)/(self.Nu_t_tild + self.Nu)
 
         self.source_MENTER_1eq = self.MatDiff(self.Nu_t_tild) - \
-                                 (c_1*D_1*self.Nu_t_tild*S - c_2*E_1e + 
-                                  diff((self.Nu+self.Nu_t_tild/sigma)*diff(self.Nu_t_tild, x), x) + 
-                                  diff((self.Nu+self.Nu_t_tild/sigma)*diff(self.Nu_t_tild, y), y) + 
+                                 (c_1*D_1*self.Nu_t_tild*S - c_2*E_1e +
+                                  diff((self.Nu+self.Nu_t_tild/sigma)*diff(self.Nu_t_tild, x), x) +
+                                  diff((self.Nu+self.Nu_t_tild/sigma)*diff(self.Nu_t_tild, y), y) +
                                   diff((self.Nu+self.Nu_t_tild/sigma)*diff(self.Nu_t_tild, z), z) )
 
 
     def get_sources(self):
         """
-        Returns a list of source terms and an associated name for the export. 
+        Returns a list of source terms and an associated name for the export.
         """
         return [("MENTER_1eq", self.source_MENTER_1eq)]
 
@@ -172,7 +172,7 @@ class Model_Menter_1eq:
         """
         Returns a list of variables used in the model and an associated name.
         """
-        return [("Nu_t_tild", self.Nu_t_tild), 
+        return [("Nu_t_tild", self.Nu_t_tild),
                 ("Nu_t", self.Nu_t)]
 
 
