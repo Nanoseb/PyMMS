@@ -56,7 +56,7 @@ class PyMMS:
             Distance to the wall needed by "SA" turbulence model
 
         turbulence_model : string
-            Turbulence model to choose, only "SA" and "MENTER_1eq" are implemented
+            Turbulence model to choose, only "SA", "SA-noft2" and "MENTER_1eq" are implemented
 
         verbose : Bool
             True if progress status should be outputed
@@ -84,6 +84,9 @@ class PyMMS:
 
         if self.turbulence_model == "SA":
             self.extra_models.append(Model_SA(self))
+
+        if self.turbulence_model == "SA-noft2":
+            self.extra_models.append(Model_SA(self, noft2=True))
 
         if self.turbulence_model == "MENTER_1eq":
             self.extra_models.append(Model_Menter_1eq(self))

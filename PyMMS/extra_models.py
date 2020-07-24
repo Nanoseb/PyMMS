@@ -23,18 +23,26 @@ class Model_SA:
     """
     One equation turbulence model from Spalart-Allmaras
     Spalart, P., & Allmaras, S. (1992, January 6). A one-equation turbulence model for aerodynamic flows. 30th Aerospace Sciences Meeting and Exhibit. https://doi.org/10.2514/6.1992-439
+
     """
-    def __init__(self, mms):
+    def __init__(self, mms, noft2=False):
+        """
+        Parameters
+        ----------
+        noft2 : Bool
+            true if the no-ft2 version of the SA model should be used
+
+        """
         self.Nu = mms.Nu
         self.rho = mms.rho
         self.U = mms.U
         self.V = mms.V
         self.W = mms.W
-        self.P = mms.P
         self.Nu_t_tild = mms.Nu_t_tild
         self.wall_dist = mms.wall_dist
         self.Sij = mms.Sij
         self.MatDiff = mms.MatDiff
+        self.noft2 = noft2
 
         self.name = "Spalart-Allmaras"
 
@@ -52,11 +60,16 @@ class Model_SA:
         c_w2 = 0.3
         c_w3 = 2
         c_v1 = 7.1
-        c_t3 = 1.2
-        c_t4 = 0.5
 
         xi = self.Nu_t_tild/self.Nu
-        f_t2 = c_t3*exp(-c_t4*xi**2)
+
+        if self.noft2:
+            f_t2 = 0
+        else:
+            c_t3 = 1.2
+            c_t4 = 0.5
+            f_t2 = c_t3*exp(-c_t4*xi**2)
+
 
         f_v1 = xi**3/(xi**3 + c_v1**3)
         f_v2 = 1 - xi/(1+xi*f_v1)
@@ -71,7 +84,8 @@ class Model_SA:
         r = self.Nu_t_tild/(S_t*kappa**2*self.wall_dist**2)
         g = (r + c_w2*(r**6 - r))
 
-        f_w = g*((1+c_w3**6)/(g**6+c_w3**6))**(1/6)
+        # f_w = g*((1+c_w3**6)/(g**6+c_w3**6))**(1/6)
+        f_w = ((1+c_w3**6)/(1+(c_w3/g)**6))**(1/6)
 
         self.source_SA = self.MatDiff(self.Nu_t_tild) -\
                          (c_b1*(1-f_t2)*S_t*self.Nu_t_tild - \
@@ -120,7 +134,6 @@ class Model_Menter_1eq:
         self.U = mms.U
         self.V = mms.V
         self.W = mms.W
-        self.P = mms.P
         self.Nu_t_tild = mms.Nu_t_tild
         self.Sij = mms.Sij
         self.MatDiff = mms.MatDiff
