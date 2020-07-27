@@ -24,41 +24,47 @@ case = "0"
 T = symbols('Period')
 Re = symbols('Re')
 As_1, As_2, As_3 = symbols('As_1 As_2 As_3')
-Pb = symbols('Pb')
+Acp_1, Acp_2 = symbols('Acp_1 Acp_2')
 rho = symbols('Rho')
 
 # Definition of default values
 if case == "0":
     global_vars = [(Re, 10**7),
-                   (Pb, 0.25),
                    (As_1, -45),
                    (As_2, 20),
-                   (As_3, 10)]
+                   (As_3, 10),
+                   (Acp_2, 0.25),
+                   ]
 if case == "A":
     global_vars = [(Re, 10**7),
-                   (Pb, 0.25),
                    (As_1, -140),
                    (As_2, 40),
-                   (As_3, 16)]
+                   (As_3, 16),
+                   (Acp_2, 0.25),
+                   ]
 if case == "B":
     global_vars = [(Re, 10**7),
-                   (Pb, -0.25),
                    (As_1, -80),
                    (As_2, 20),
-                   (As_3, 50)]
+                   (As_3, 50),
+                   (Acp_2, -0.25),
+                   ]
 if case == "C":
     global_vars = [(Re, 10**8),
-                   (Pb, -0.1),
                    (As_1, -200),
                    (As_2, 60),
-                   (As_3, 10)]
+                   (As_3, 10),
+                   (Acp_2, -0.1),
+                   ]
 if case == "D":
     global_vars = [(Re, 10**9),
-                   (Pb, 0.1),
                    (As_1, -60),
                    (As_2, 20),
-                   (As_3, 5)]
+                   (As_3, 5),
+                   (Acp_2, 0.1),
+                   ]
 
+global_vars.append((Acp_1, 500))
 global_vars.append((T, 50))
 global_vars.append((rho, 1))
 
@@ -82,7 +88,6 @@ As = [As_1, As_2, As_3]
 Al  = Array([0.0792, 0.000063, 0.005])
 Bl  = Array([0.2, 0.2, 0.2])
 Alf = Array([0.35, 0.4, 0.25])
-Acp = Array([500, 0.25])
 Aem = Array([0.4, 0.6, 10])
 
 A1 = Al[i]*Re**(1-Bl[i])
@@ -127,7 +132,7 @@ Pcpy = y*y*(y/3-0.5*Ymax)+1+Ymax**3/6
 Pcpsx = 1.5*(x-Xmin)*pi/(Xmax-Xmin)
 Pcpsy = 0.5*pi*y/Ymax
 
-Cpms = Acp[0]*log(Pcpx)*log(Pcpy) + Acp[1]*(cos(Pcpsx)**2 * cos(Pcpsy)**2)*sin(pi*z)**2*Ftime
+Cpms = Acp_1*log(Pcpx)*log(Pcpy) + Acp_2*(cos(Pcpsx)**2 * cos(Pcpsy)**2)*sin(pi*z)**2*Ftime
 
 ###############################
 # Nu_t_tild
