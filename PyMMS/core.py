@@ -26,6 +26,7 @@ class PyMMS:
                  Nu_t_tild=Integer(0),
                  wall_dist=Integer(1),
                  turbulence_model="SA",
+                 mass_conservative=False,
                  verbose=True):
         """
 
@@ -58,6 +59,9 @@ class PyMMS:
         turbulence_model : string
             Turbulence model to choose, only "SA", "SA-noft2" and "MENTER_1eq" are implemented
 
+        mass_conservative: Bool
+            Set to true to make the assumption that div(u)=0. Should simplify the produced output.
+
         verbose : Bool
             True if progress status should be outputed
 
@@ -71,6 +75,7 @@ class PyMMS:
         self.P = P.doit()
         self.Nu_t_tild = Nu_t_tild.doit()
         self.wall_dist = wall_dist.doit()
+        self.mass_conservative = mass_conservative
         self.verbose = verbose
         if self.verbose: print("Initialize MMS")
 
@@ -96,15 +101,22 @@ class PyMMS:
 
 
     def init_operators(self):
-        #  Mean strain rate Tensor
-        self.Sij = Matrix([[2*diff(self.U,x)                , diff(self.U,y) + diff(self.V,x), diff(self.U,z) + diff(self.W,x)],
-                           [diff(self.U,y) + diff(self.V,x) , 2*diff(self.V,y)               , diff(self.W,y) + diff(self.V,z)],
-                           [diff(self.U,z) + diff(self.W,x) , diff(self.W,y) + diff(self.V,z), 2*diff(self.W,z) ]])/2
 
+        if self.mass_conservative:
+            # Assumes that div(u) == 0
+            divU = 0
+            # Material Derivative of phi
+            self.MatDiff = lambda phi: diff(phi, t) + self.U*diff(phi, x) + self.V*diff(phi, y) + self.W*diff(phi, z)
+        else:
+            # Makes no assumption on div(u)
+            divU = diff(self.U,x)+diff(self.V,y)+diff(self.W,z)
+            self.MatDiff = lambda phi: diff(phi, t) + diff(self.U * phi, x) + diff(self.V * phi, y) + diff(self.W * phi, z)
 
-        # Material Derivative of phi
-        self.MatDiff = lambda phi: diff(phi, t) + self.U*diff(phi, x) + self.V*diff(phi, y) + self.W*diff(phi, z)
-
+            # Mean strain rate Tensor
+        # Mean strain rate Tensor
+        self.Sij = Matrix([[2*diff(self.U,x) -2/3*divU      , diff(self.U,y) + diff(self.V,x), diff(self.U,z) + diff(self.W,x)],
+                           [diff(self.U,y) + diff(self.V,x) , 2*diff(self.V,y) - 2/3*divU    , diff(self.W,y) + diff(self.V,z)],
+                           [diff(self.U,z) + diff(self.W,x) , diff(self.W,y) + diff(self.V,z), 2*diff(self.W,z) -2/3*divU ]])/2
 
 
     def compute_sources(self):
