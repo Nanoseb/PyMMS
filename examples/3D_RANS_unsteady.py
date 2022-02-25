@@ -162,6 +162,7 @@ mms = PyMMS(Nu=Nu,
             P=Cpms,
             Nu_t_tild=Nu_t_tildms,
             wall_dist=y,
+            mass_conservative=True,
             turbulence_model="SA")
 
 mms.compute_sources()
